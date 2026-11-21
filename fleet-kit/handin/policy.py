@@ -29,6 +29,7 @@ FREEZE_LEAD = 6.0        # an unconfirmed group freezes this many seconds before
 CONF_REPEAT = (0, 2, 4, 7, 11, 16, 24)
 DEV_REPEAT = (0, 1, 3, 6)
 NEIGH_R = 900.0
+GRID = 300.0
 
 _SHARED = {}
 
@@ -81,14 +82,28 @@ def _shared(scenario, plan):
         t += 4.0
     for a in neigh:
         neigh[a].discard(a)
+    # spatial index of every planned trajectory: cell -> [(t, aircraft)], sampled every 2 s
+    grid = {}
+    for a in names:
+        c = clocks[a]
+        t = c.start
+        while t <= c.end + 1e-9:
+            p = c.position(t)
+            grid.setdefault((int(p[0] // GRID), int(p[1] // GRID)), []).append((t, a))
+            t += 2.0
     te_first = {c: min(te[a] for a in m) for c, m in groups.items()}
     te_last = {c: max(te[a] for a in m) for c, m in groups.items()}
     got = {"te_first": te_first, "te_last": te_last, "plan": plan, "routes": routes, "ac": ac, "clocks": clocks, "target": target, "te": te,
            "groups": groups, "obs": obs, "num": num, "ids": ids, "neigh": neigh,
-           "contacts": scenario.contact_by_id(), "rules": scenario.rules}
+           "contacts": scenario.contact_by_id(), "rules": scenario.rules, "grid": grid}
     _SHARED.clear()
     _SHARED[key] = got
     return got
+
+
+def _c(x):
+    """Compact number for messages: 3.0 -> 3."""
+    return int(x) if float(x).is_integer() else x
 
 
 def _cyl_hit(a, b, z):
@@ -133,29 +148,16 @@ class Policy:
         ids = self.S["ids"]
         for m in obs["inbox"]:
             p = m.get("payload")
-            if not isinstance(p, dict):
+            if not isinstance(p, list):
                 continue
-            o = p.get("o")
-            if isinstance(o, list) and len(o) == 2:
-                try:
-                    cid = ids[int(o[0])]
-                    self.conf[cid] = min(self.conf.get(cid, 1e18), float(o[1]))
-                except (ValueError, IndexError, TypeError):
-                    pass
-            d = p.get("d")
-            if isinstance(d, list) and len(d) == 3:
-                try:
-                    self.dev[m["from"]] = (float(d[1]), float(m["sent_t"]), float(d[0]), t)
-                except (ValueError, TypeError):
-                    pass
-            z = p.get("z")
-            if isinstance(z, list) and len(z) == 3:
-                zz = (float(z[0]), float(z[1]), float(z[2]), 200.0)
-                if zz not in self.zones:
-                    self.zones.append(zz)
-            rc = p.get("r")
-            if isinstance(rc, int) and 0 <= rc < len(ids):
-                self.reclass.add(ids[rc])
+            try:
+                if len(p) == 3:           # confirmation: [contact number, completion time, 0]
+                    cid = ids[int(p[0])]
+                    self.conf[cid] = min(self.conf.get(cid, 1e18), float(p[1]))
+                elif len(p) == 2:         # deviation: [route-clock rate, route clock at sending]
+                    self.dev[m["from"]] = (float(p[1]), float(m["sent_t"]), float(p[0]), t)
+            except (ValueError, IndexError, TypeError, KeyError):
+                pass
 
     # ------------------------------------------------------------------ prediction
     def _peer_pos(self, peer, t):
@@ -196,7 +198,7 @@ class Policy:
         hovering = self.my_dev is not None and self.my_dev[0] == 0.0
         if rate == 0.0 and hovering:
             return 1e9
-        horizon = 2.5 if rate == 0.0 else 99.0
+        horizon = 1.5 if rate == 0.0 else 99.0
         me_dev = not (abs(rate - 1.0) < 1e-9 and abs(tau - t) < 1e-6) or rate == 0.0
         peers = set()
         for p, d in self.dev.items():
@@ -207,7 +209,7 @@ class Policy:
             elif not me_dev or p < self.id:
                 peers.add(p)                  # moving deviators: on-plan traffic and higher ids yield
         if me_dev:
-            peers |= set(S["neigh"].get(self.id, ())) - set(self.dev)
+            peers |= self._near_plans(obs["pos"], t - 4.0, t + 8.0) - set(self.dev)
         best = 1e9
         tgt = self.target
         tpos = S["contacts"][tgt].pos if tgt is not None else None
@@ -337,7 +339,7 @@ class Policy:
             if self._motion_hits_zone(obs, r):
                 continue
             sep = self._min_sep(obs, r)
-            if sep >= need:
+            if sep >= (self.rules.d_sep_m + 4.0 if r == 0.0 else need):
                 chosen = r
                 break
             if best_any is None or sep > best_any[0]:
@@ -354,19 +356,20 @@ class Policy:
             k = t - self.dev_sent_at
             period = 10
             if chosen == 0.0:
-                period = 1 if self._traffic_near(obs, 350.0, (0.0, 4.0, 8.0)) else (3 if self._traffic_near(obs) else 12)
+                th = self._threat(obs)
+                period = 1 if th <= 8.0 else (3 if th <= 20.0 else 15)
             if any(abs(k - x) < 0.5 for x in DEV_REPEAT) or (k > 0 and int(round(k)) % period == 0):
-                msg = {"d": [chosen, round(tau, 1), 0]}
+                msg = [_c(chosen), _c(round(tau, 1))]
         # ---- confirmations (scouts send, effectors relay their own target once)
         if msg is None:
             for cid, t0 in self.sent_conf.items():
                 if any(abs((t - t0) - x) < 0.5 for x in CONF_REPEAT):
-                    msg = {"o": [S["num"][cid], math.ceil(self.conf[cid] * 10) / 10]}
+                    msg = [S["num"][cid], _c(math.ceil(self.conf[cid] * 10) / 10), 0]
                     break
         if msg is None and self.kind == "effector" and self.need_conf and self.target in self.conf \
                 and self.target not in self.relayed:
             self.relayed.add(self.target)
-            msg = {"o": [S["num"][self.target], math.ceil(self.conf[self.target] * 10) / 10]}
+            msg = [S["num"][self.target], _c(math.ceil(self.conf[self.target] * 10) / 10), 0]
         if chosen == 1.0:
             return {"kind": "continue"}, msg
         if chosen == 0.0:
@@ -374,6 +377,41 @@ class Policy:
         if chosen < 0:
             return {"kind": "return"}, msg
         return {"kind": "speed", "scale": chosen}, msg
+
+    def _near_plans(self, pos, t0, t1):
+        """Aircraft whose planned trajectory passes within ~one grid cell of `pos` during [t0, t1]."""
+        g = self.S["grid"]
+        i, j = int(pos[0] // GRID), int(pos[1] // GRID)
+        out = set()
+        for di in (-1, 0, 1):
+            for dj in (-1, 0, 1):
+                for t, a in g.get((i + di, j + dj), ()):
+                    if t0 <= t <= t1:
+                        out.add(a)
+        out.discard(self.id)
+        return out
+
+    def _threat(self, obs, radius=160.0):
+        """Seconds until a peer that may not know we hover gets within `radius` of us (inf if none in 20 s)."""
+        t = obs["t"]
+        me = obs["pos"]
+        S = self.S
+        cand = []
+        for p in self._near_plans(me, t - 2.0, t + 22.0):
+            d = self.dev.get(p)
+            if d is not None and (abs(d[2]) < 1e-9 or abs(d[0] - d[1]) > 0.6):
+                continue      # it hovers or deviates: it has been hearing us
+            cand.append(p)
+        best = 1e9
+        for p in cand:
+            for k in range(0, 21, 2):
+                if k >= best:
+                    break
+                q = self._peer_pos(p, t + k)
+                if q is not None and (me[0] - q[0]) ** 2 + (me[1] - q[1]) ** 2 + (me[2] - q[2]) ** 2 < radius * radius:
+                    best = k
+                    break
+        return best
 
     def _traffic_near(self, obs, radius=700.0, ks=(0.0, 8.0, 16.0)):
         t = obs["t"]
