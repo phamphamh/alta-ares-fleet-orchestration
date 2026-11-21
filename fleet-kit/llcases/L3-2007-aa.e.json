@@ -1,0 +1,23 @@
+{
+ "version": 1,
+ "t_loss": 321.0,
+ "events": [
+  {
+   "kind": "popup_zone",
+   "t": 339.0,
+   "center": [
+    1951.4,
+    542.8
+   ],
+   "radius_m": 85.0,
+   "top_m": 200.0
+  },
+  {
+   "kind": "reclassify",
+   "t": 489.0,
+   "contact": "C02"
+  }
+ ],
+ "seed": 2008,
+ "oracle_points": 468.0
+}

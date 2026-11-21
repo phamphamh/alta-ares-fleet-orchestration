@@ -1,0 +1,18 @@
+{
+ "version": 1,
+ "t_loss": 426.0,
+ "events": [
+  {
+   "kind": "reclassify",
+   "t": 471.0,
+   "contact": "C26"
+  },
+  {
+   "kind": "reclassify",
+   "t": 482.0,
+   "contact": "C35"
+  }
+ ],
+ "seed": 2004,
+ "oracle_points": 2840.0
+}

@@ -1,0 +1,28 @@
+{
+ "version": 1,
+ "t_loss": 320.0,
+ "events": [
+  {
+   "kind": "popup_zone",
+   "t": 325.0,
+   "center": [
+    3262.7,
+    4819.4
+   ],
+   "radius_m": 102.0,
+   "top_m": 200.0
+  },
+  {
+   "kind": "failure",
+   "t": 339.0,
+   "aircraft": "H08"
+  },
+  {
+   "kind": "reclassify",
+   "t": 342.0,
+   "contact": "C36"
+  }
+ ],
+ "seed": 2002,
+ "oracle_points": 939.0
+}

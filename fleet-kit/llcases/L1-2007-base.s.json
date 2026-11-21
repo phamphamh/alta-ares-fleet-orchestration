@@ -1,0 +1,213 @@
+{
+ "version": "1",
+ "seed": 2007,
+ "level": "L1",
+ "horizon_s": 600.0,
+ "aircraft": [
+  {
+   "id": "S01",
+   "type": "scout",
+   "home": [
+    170.0,
+    170.0,
+    0.0
+   ],
+   "v_h_mps": 15.0,
+   "v_up_mps": 7.4,
+   "v_down_mps": 5.2,
+   "capacity_wh": 40.7,
+   "battery_pct": 83.0,
+   "power": {
+    "p0_w": 79.8,
+    "k_v": 0.217,
+    "e_climb_wh_per_m": 0.025
+   }
+  },
+  {
+   "id": "S02",
+   "type": "scout",
+   "home": [
+    150.0,
+    150.0,
+    0.0
+   ],
+   "v_h_mps": 18.0,
+   "v_up_mps": 5.3,
+   "v_down_mps": 5.4,
+   "capacity_wh": 41.4,
+   "battery_pct": 86.0,
+   "power": {
+    "p0_w": 74.4,
+    "k_v": 0.22,
+    "e_climb_wh_per_m": 0.015
+   }
+  },
+  {
+   "id": "L01",
+   "type": "effector",
+   "home": [
+    150.0,
+    170.0,
+    0.0
+   ],
+   "v_h_mps": 30.4,
+   "v_up_mps": 8.3,
+   "v_down_mps": 18.7,
+   "capacity_wh": 41.5,
+   "battery_pct": 93.0,
+   "power": {
+    "p0_w": 81.0,
+    "k_v": 0.067,
+    "e_climb_wh_per_m": 0.015
+   },
+   "subtype": "light"
+  },
+  {
+   "id": "L02",
+   "type": "effector",
+   "home": [
+    170.0,
+    150.0,
+    0.0
+   ],
+   "v_h_mps": 32.9,
+   "v_up_mps": 11.0,
+   "v_down_mps": 19.9,
+   "capacity_wh": 43.1,
+   "battery_pct": 78.0,
+   "power": {
+    "p0_w": 113.8,
+    "k_v": 0.1,
+    "e_climb_wh_per_m": 0.014
+   },
+   "subtype": "light"
+  },
+  {
+   "id": "H01",
+   "type": "effector",
+   "home": [
+    190.0,
+    150.0,
+    0.0
+   ],
+   "v_h_mps": 20.1,
+   "v_up_mps": 6.9,
+   "v_down_mps": 11.1,
+   "capacity_wh": 66.8,
+   "battery_pct": 99.0,
+   "power": {
+    "p0_w": 150.8,
+    "k_v": 0.153,
+    "e_climb_wh_per_m": 0.036
+   },
+   "subtype": "heavy"
+  }
+ ],
+ "contacts": [
+  {
+   "id": "C01",
+   "class": "hostile",
+   "pos": [
+    2700.0,
+    1213.3,
+    0.0
+   ],
+   "points": 70,
+   "engage_needs": {
+    "heavy": 1
+   },
+   "window_s": [
+    152.6,
+    310.0
+   ]
+  },
+  {
+   "id": "C02",
+   "class": "hostile",
+   "pos": [
+    2294.8,
+    1109.5,
+    0.0
+   ],
+   "points": 90,
+   "engage_needs": {
+    "light": 2,
+    "heavy": 1
+   },
+   "window_s": [
+    109.0,
+    277.6
+   ]
+  },
+  {
+   "id": "C03",
+   "class": "hostile",
+   "pos": [
+    2487.3,
+    876.5,
+    0.0
+   ],
+   "points": 62,
+   "engage_needs": {
+    "light": 2
+   },
+   "window_s": [
+    328.4,
+    512.4
+   ]
+  },
+  {
+   "id": "C04",
+   "class": "unknown",
+   "pos": [
+    1101.0,
+    1412.9,
+    0.0
+   ],
+   "points": 17,
+   "window_s": [
+    74.1,
+    319.3
+   ]
+  },
+  {
+   "id": "C05",
+   "class": "civilian",
+   "pos": [
+    1334.3,
+    1565.9,
+    0.0
+   ],
+   "window_s": null
+  }
+ ],
+ "zones": [
+  {
+   "id": "Z01",
+   "center": [
+    2055.4,
+    2000.2
+   ],
+   "radius_m": 209.0,
+   "top_m": 100.0
+  }
+ ],
+ "rules": {
+  "z_min_m": 30.0,
+  "z_max_m": 150.0,
+  "R_obs_m": 150.0,
+  "obs_dwell_s": 20.0,
+  "confirm_margin_s": 10.0,
+  "protect_radius_m": 100.0,
+  "collateral_radius_m": 200.0,
+  "d_sep_m": 40.0,
+  "exempt_radius_m": 100.0,
+  "R_eng_m": 25.0,
+  "sync_window_s": 20.0,
+  "verify_window_s": 120.0,
+  "verify_bonus": 0.25,
+  "lambda_e": 0.5,
+  "c_eff": 10.0
+ },
+ "events": []
+}

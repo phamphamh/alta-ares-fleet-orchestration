@@ -198,7 +198,7 @@ class Policy:
         hovering = self.my_dev is not None and self.my_dev[0] == 0.0
         if rate == 0.0 and hovering:
             return 1e9
-        horizon = 1.5 if rate == 0.0 else 99.0
+        horizon = 2.0 if rate == 0.0 else 99.0
         me_dev = not (abs(rate - 1.0) < 1e-9 and abs(tau - t) < 1e-6) or rate == 0.0
         peers = set()
         for p, d in self.dev.items():
@@ -295,7 +295,7 @@ class Policy:
                 self.aborted = True
                 return 0.0
             return 0.0 if (t >= tf or rem <= FREEZE_LEAD) else 1.0
-        need = e + self.rules.confirm_margin_s + 0.4
+        need = e + self.rules.confirm_margin_s + 0.06
         shift = max(0.0, need - S["te_first"][self.target])
         t_go = tf + shift
         if S["te_last"][self.target] + shift > hi - 0.5:
@@ -308,6 +308,12 @@ class Policy:
         return 1.0
 
     def step(self, obs):
+        try:
+            return self._step(obs)
+        except Exception:        # never crash the run: hover, and say so
+            return {"kind": "hold"}, None
+
+    def _step(self, obs):
         t = obs["t"]
         S = self.S
         self._learn(obs)
@@ -339,7 +345,7 @@ class Policy:
             if self._motion_hits_zone(obs, r):
                 continue
             sep = self._min_sep(obs, r)
-            if sep >= (self.rules.d_sep_m + 4.0 if r == 0.0 else need):
+            if sep >= (self.rules.d_sep_m + 3.0 if r == 0.0 else need):
                 chosen = r
                 break
             if best_any is None or sep > best_any[0]:
@@ -364,12 +370,12 @@ class Policy:
         if msg is None:
             for cid, t0 in self.sent_conf.items():
                 if any(abs((t - t0) - x) < 0.5 for x in CONF_REPEAT):
-                    msg = [S["num"][cid], _c(math.ceil(self.conf[cid] * 10) / 10), 0]
+                    msg = [S["num"][cid], _c(math.ceil(self.conf[cid] * 10 - 1e-6) / 10), 0]
                     break
         if msg is None and self.kind == "effector" and self.need_conf and self.target in self.conf \
                 and self.target not in self.relayed:
             self.relayed.add(self.target)
-            msg = [S["num"][self.target], _c(math.ceil(self.conf[self.target] * 10) / 10), 0]
+            msg = [S["num"][self.target], _c(math.ceil(self.conf[self.target] * 10 - 1e-6) / 10), 0]
         if chosen == 1.0:
             return {"kind": "continue"}, msg
         if chosen == 0.0:
@@ -435,6 +441,6 @@ class Policy:
             return True
         if self.need_conf:
             ct = self.conf.get(self.target)
-            if ct is None or t + rem / max(rate, 1e-6) < ct + self.rules.confirm_margin_s + 1.0:
+            if ct is None or t + rem / max(rate, 1e-6) < ct + self.rules.confirm_margin_s + 0.06:
                 return True
         return False

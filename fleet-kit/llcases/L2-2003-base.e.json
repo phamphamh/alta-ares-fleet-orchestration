@@ -1,0 +1,23 @@
+{
+ "version": 1,
+ "t_loss": 168.0,
+ "events": [
+  {
+   "kind": "failure",
+   "t": 178.0,
+   "aircraft": "S02"
+  },
+  {
+   "kind": "popup_zone",
+   "t": 375.0,
+   "center": [
+    619.9,
+    2565.9
+   ],
+   "radius_m": 102.0,
+   "top_m": 200.0
+  }
+ ],
+ "seed": 2004,
+ "oracle_points": 81.0
+}
