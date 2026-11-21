@@ -5,3 +5,6 @@ fleet-kit/gen/
 fleet-kit/base-plans/
 fleet-kit/validation/
 .DS_Store
+fleet-kit/llcases*/
+fleet-kit/gen2/
+fleet-kit/handin.zip

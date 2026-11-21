@@ -304,7 +304,8 @@ def plan_scenario(sc, budget_s: float = 36.0, log=None, seed: int = 0):
     best = None
     best_res = None
     alphas = [0.5, 0.3, 0.7, 0.4, 0.6, 0.5]
-    attempts = 4
+    import os
+    attempts = int(os.environ.get("AA_ATTEMPTS", "4"))
     per = max(1.0, min((budget_s - 3.0) / attempts, 1.0 + 0.09 * n))
     for attempt in range(attempts + 2):
         if time.monotonic() - t0 + per + 1.0 > budget_s:

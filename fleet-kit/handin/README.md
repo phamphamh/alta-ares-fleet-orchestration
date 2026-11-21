@@ -54,11 +54,12 @@ plan.
 
 | Set | Ours | Greedy baseline | Ratio |
 |---|---:|---:|---:|
-| Public validation set (8 scenarios) | RESULT_VAL | 2664 | RATIO_VAL |
+| Public validation set (the 8 board scenarios) | 5 019 | 2 664 | x1.88 |
 | 40 generated scenarios (L1 to L4, seeds 1000 to 1009) | 22 253 | 12 308 | x1.81 |
-| UNSEEN_LINE |
+| 32 unseen scenarios (seeds 2000 to 2007, generated after the planner was frozen) | 18 398 | 9 771 | x1.88 |
+| of which L4 (100 aircraft) | 10 746 | 3 549 | x3.03 |
 
-0 invalid plans, longest run under 40 s. On L4 we serve nearly every hostile that is reachable at
+0 invalid plans over every run, longest run under 40 s. The official `check_handin.py` (L1 to L4, seeds 0 and 1): 4 703 against 2 749, 0 failed runs, 36 s at most. On L4 we serve nearly every hostile that is reachable at
 all: what is left is either inside a collateral radius, out of every scout's range, or worth less than
 its strike.
 
@@ -93,4 +94,18 @@ saturated.
 
 ### Results
 
-LINKLOSS_TABLE
+64 unseen cases (L1 to L4, baseline plans and ours, events from `make_events`), 3 comms seeds each:
+
+| At the leaderboard setting (1000 m, 200 B/s) | Ours | `broadcast` baseline |
+|---|---:|---:|
+| Mean retention | 0.978 | 0.432 |
+| Failed runs | 0 / 192 | 109 / 192 |
+| Messages per aircraft per minute | 3.9 | 60 |
+| S_loss | **0.970** | 0.312 |
+
+**Sizing grid** (R_max 250 to 2000 m x C 50 to 800 B/s, 3 840 runs): **20 / 20 cells meet the bar**
+(no failure, retention >= 0.9; worst cell 250 m x 50 B/s at 0.919). **Frontier: 50 B/s at every
+range**, the smallest capacity tested. Range costs retention, not safety: at 250 m fewer
+confirmations arrive, so some strikes are rightly held back.
+
+Policy compute: under 0.03 ms per call on a laptop.
