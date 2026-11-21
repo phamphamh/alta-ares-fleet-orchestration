@@ -1,0 +1,18 @@
+{
+ "version": 1,
+ "t_loss": 246.0,
+ "events": [
+  {
+   "kind": "reclassify",
+   "t": 267.0,
+   "contact": "C01"
+  },
+  {
+   "kind": "failure",
+   "t": 292.0,
+   "aircraft": "L14"
+  }
+ ],
+ "seed": 1004,
+ "oracle_points": 443.0
+}

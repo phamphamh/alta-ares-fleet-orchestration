@@ -1,0 +1,18 @@
+{
+ "version": 1,
+ "t_loss": 357.0,
+ "events": [
+  {
+   "kind": "failure",
+   "t": 451.0,
+   "aircraft": "S03"
+  },
+  {
+   "kind": "failure",
+   "t": 621.0,
+   "aircraft": "H07"
+  }
+ ],
+ "seed": 1006,
+ "oracle_points": 502.0
+}

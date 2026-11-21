@@ -1,0 +1,18 @@
+{
+ "version": 1,
+ "t_loss": 110.0,
+ "events": [
+  {
+   "kind": "popup_zone",
+   "t": 174.0,
+   "center": [
+    1768.0,
+    602.2
+   ],
+   "radius_m": 90.0,
+   "top_m": 200.0
+  }
+ ],
+ "seed": 1003,
+ "oracle_points": 86.0
+}
