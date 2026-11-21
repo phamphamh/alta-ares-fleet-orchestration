@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+fleet-kit/out*/
+fleet-kit/gen/
+fleet-kit/base-plans/
+fleet-kit/validation/
+.DS_Store
