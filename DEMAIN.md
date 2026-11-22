@@ -19,7 +19,7 @@
 
 ## Envoyer nos plans sur le tableau des scores (sur le wifi de la Hackathon House)
 
-1. Récupère le **token** de l'équipe auprès des organisateurs (contact : jules.giraud@altaares.com).
+1. Récupère le **token** de l'équipe auprès des organisateurs.
 2. Dans le Terminal :
    ```sh
    cd ~/orca/projects/altares/fleet-kit
